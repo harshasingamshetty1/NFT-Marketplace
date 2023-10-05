@@ -1,7 +1,6 @@
 const dotenv = require("dotenv");
 dotenv.config({ path: "../../.env" });
 const key = process.env.REACT_APP_PINATA_KEY;
-console.log("🚀 ~ file: pinata.js:3 ~ key:", key);
 const secret = process.env.REACT_APP_PINATA_SECRET;
 
 const axios = require("axios");
@@ -39,7 +38,6 @@ export const uploadFileToIPFS = async (file) => {
 
   let data = new FormData();
   data.append("file", file);
-  console.log("🚀 ~ file: pinata.js:3 ~ key:", key);
 
   const metadata = JSON.stringify({
     name: "testname",
