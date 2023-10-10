@@ -1,13 +1,6 @@
 import fullLogo from "../assets/image.png";
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Link,
-  useRouteMatch,
-  useParams,
-} from "react-router-dom";
-import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { useState } from "react";
 import { useLocation } from "react-router";
 
 function Navbar() {
@@ -20,94 +13,78 @@ function Navbar() {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
     const addr = await signer.getAddress();
+    console.log("🚀 ~ file: Navbar.js:16 ~ getAddress ~ addr:", addr);
     updateAddress(addr);
   }
 
   function updateButton() {
     const ethereumButton = document.querySelector(".enableEthereumButton");
-    if (connected) {
-      console.log(
-        "🚀 ~ file: Navbar.js:29 ~ updateButton ~ connected:",
-        connected
-      );
-      ethereumButton.textContent = "Disconnect"; // Change button text to "Disconnect"
-      ethereumButton.classList.remove("hover:bg-blue-70");
-      ethereumButton.classList.remove("bg-blue-500");
-      ethereumButton.classList.add("hover:bg-red-70"); // Add a class for the disconnect button
-      ethereumButton.classList.add("bg-red-500");
-    } else {
-      console.log("🚀 ~ file: Navbar.js:36 ~ updateButton ~ else:");
 
-      ethereumButton.textContent = "Connect Wallet"; // Change back to "Connect Wallet"
-      ethereumButton.classList.remove("hover:bg-red-70"); // Remove the disconnect button class
-      ethereumButton.classList.remove("bg-red-500");
-      ethereumButton.classList.add("hover:bg-blue-70");
-      ethereumButton.classList.add("bg-blue-500");
-    }
+    console.log(
+      "🚀 ~ file: Navbar.js:29 ~ updateButton ~ connected:",
+      connected
+    );
+    ethereumButton.textContent = "Wallet connected"; // Change button text to "Disconnect"
+    console.log(
+      "🚀 ~ file: Navbar.js:27 ~ updateButton ~ textContent:",
+      ethereumButton.textContent
+    );
+    // ethereumButton.classList.remove("hover:bg-blue-70");
+    // ethereumButton.classList.remove("bg-blue-500");
+    // ethereumButton.classList.add("hover:bg-red-70"); // Add a class for the disconnect button
+    // ethereumButton.classList.add("bg-red-500");
   }
 
   async function connectWebsite() {
     // If already connected, disconnect
-    if (connected) {
-      console.log(
-        "🚀 ~ file: Navbar.js:46 ~ connectWebsite ~ connected:",
-        connected
-      );
-      await window.ethereum.request({
-        method: "wallet_requestPermissions",
-        params: [
-          {
-            eth_accounts: {},
-          },
-        ],
-      });
-      toggleConnect(false); // Update connected state to false
-      updateAddress("0x"); // Reset address
-      updateButton(); // Update button UI
-
+    if (!window.ethereum) {
+      alert("Please install metamask extension to continue.");
       return;
     }
+    try {
+      const chainId = await window.ethereum.request({ method: "eth_chainId" });
+      console.log("connected1:", connected);
 
-    const chainId = await window.ethereum.request({ method: "eth_chainId" });
-    if (chainId !== "0x13881") {
+      if (chainId !== "0x13881") {
+        await window.ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: "0x13881" }],
+        });
+      }
+      console.log("connected2:", connected);
+
+      await window.ethereum
+        .request({ method: "eth_requestAccounts" })
+        .then(() => {
+          toggleConnect(true); // Update connected state to true
+          updateButton(); // Update button UI
+          console.log("here");
+          getAddress();
+          window.location.replace(location.pathname);
+        });
       console.log(
-        "🚀 ~ file: Navbar.js:63 ~ connectWebsite ~ chainId:",
-        chainId
+        "🚀 ~ file: Navbar.js:66 ~ connectWebsite ~ connected:",
+        connected
       );
-      //alert('Incorrect network! Switch your metamask network to Mumbai');
-      console.log("🚀 ~ file: Navbar.js:82 ~ connectWebsite ~ window:", window);
-
-      await window.ethereum.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: "0x13881" }],
-      });
+    } catch (e) {
+      console.log(e);
     }
-    await window.ethereum
-      .request({ method: "eth_requestAccounts" })
-      .then(() => {
-        toggleConnect(true); // Update connected state to true
-        updateButton(); // Update button UI
-        console.log("here");
-        getAddress();
-        window.location.replace(location.pathname);
-      });
-    console.log("🚀 ~ file: Navbar.js:79 ~ connectWebsite ~ window:");
   }
 
-  useEffect(() => {
-    if (window.ethereum == undefined) return;
-    let val = window.ethereum.isConnected();
-    if (val) {
-      console.log("here");
-      getAddress();
-      toggleConnect(val);
-      updateButton();
-    }
+  // useEffect(() => {
+  //   if (window.ethereum == undefined) return;
+  //   let val = window.ethereum.isConnected();
+  //   if (val) {
+  //     console.log("here");
+  //     getAddress();
+  //     toggleConnect(val);
+  //     updateButton();
+  //   }
 
-    window.ethereum.on("accountsChanged", function (accounts) {
-      window.location.replace(location.pathname);
-    });
-  });
+  //   window.ethereum.on("accountsChanged", function (accounts) {
+  //     window.location.replace(location.pathname);
+  //   });
+  // });
 
   return (
     <div className="">
@@ -123,7 +100,7 @@ function Navbar() {
                 className="inline-block -mt-2"
               />
               <div className="inline-block font-bold text-xl ml-2">
-                NFT Marketplace
+                CryptoCanvas
               </div>
             </Link>
           </li>
@@ -160,6 +137,7 @@ function Navbar() {
                 <button
                   className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm"
                   onClick={connectWebsite}
+                  disabled={connected}
                 >
                   {connected ? "Connected" : "Connect Wallet"}
                 </button>
