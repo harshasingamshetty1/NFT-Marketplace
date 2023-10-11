@@ -1,12 +1,13 @@
-import fullLogo from "../assets/image.png";
+import fullLogo from "../assets/CryptoCanvas.png";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useLocation } from "react-router";
+import { useWeb3 } from "../web3Context";
 
 function Navbar() {
-  const [connected, toggleConnect] = useState(false);
+  const { connected, setConnected, currAddress, updateAddress } = useWeb3(); // Use the hook
+
   const location = useLocation();
-  const [currAddress, updateAddress] = useState("0x");
 
   async function getAddress() {
     const ethers = require("ethers");
@@ -20,15 +21,7 @@ function Navbar() {
   function updateButton() {
     const ethereumButton = document.querySelector(".enableEthereumButton");
 
-    console.log(
-      "🚀 ~ file: Navbar.js:29 ~ updateButton ~ connected:",
-      connected
-    );
     ethereumButton.textContent = "Wallet connected"; // Change button text to "Disconnect"
-    console.log(
-      "🚀 ~ file: Navbar.js:27 ~ updateButton ~ textContent:",
-      ethereumButton.textContent
-    );
     // ethereumButton.classList.remove("hover:bg-blue-70");
     // ethereumButton.classList.remove("bg-blue-500");
     // ethereumButton.classList.add("hover:bg-red-70"); // Add a class for the disconnect button
@@ -37,12 +30,15 @@ function Navbar() {
 
   async function connectWebsite() {
     // If already connected, disconnect
+
     if (!window.ethereum) {
       alert("Please install metamask extension to continue.");
       return;
     }
     try {
-      const chainId = await window.ethereum.request({ method: "eth_chainId" });
+      const chainId = await window.ethereum.request({
+        method: "eth_chainId",
+      });
       console.log("connected1:", connected);
 
       if (chainId !== "0x13881") {
@@ -56,16 +52,12 @@ function Navbar() {
       await window.ethereum
         .request({ method: "eth_requestAccounts" })
         .then(() => {
-          toggleConnect(true); // Update connected state to true
-          updateButton(); // Update button UI
+          setConnected(true); // Update connected state to true
+          // updateButton(); // Update button UI
           console.log("here");
           getAddress();
-          window.location.replace(location.pathname);
+          // window.location.replace(location.pathname);
         });
-      console.log(
-        "🚀 ~ file: Navbar.js:66 ~ connectWebsite ~ connected:",
-        connected
-      );
     } catch (e) {
       console.log(e);
     }
@@ -77,7 +69,7 @@ function Navbar() {
   //   if (val) {
   //     console.log("here");
   //     getAddress();
-  //     toggleConnect(val);
+  //     setConnected(val);
   //     updateButton();
   //   }
 
@@ -95,16 +87,16 @@ function Navbar() {
               <img
                 src={fullLogo}
                 alt=""
-                width={120}
-                height={120}
+                width={240}
+                height={240}
                 className="inline-block -mt-2"
               />
-              <div className="inline-block font-bold text-xl ml-2">
+              <div className="inline-block font-bold text-2xl ml-2">
                 CryptoCanvas
               </div>
             </Link>
           </li>
-          <li className="w-2/6">
+          <li className="w-2/6 ">
             <ul className="lg:flex justify-between font-bold mr-10 text-lg">
               {location.pathname === "/" ? (
                 <li className="border-b-2 hover:pb-0 p-2">
@@ -137,7 +129,6 @@ function Navbar() {
                 <button
                   className="enableEthereumButton bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm"
                   onClick={connectWebsite}
-                  disabled={connected}
                 >
                   {connected ? "Connected" : "Connect Wallet"}
                 </button>
@@ -150,7 +141,11 @@ function Navbar() {
         {currAddress !== "0x"
           ? "Connected to"
           : "Not Connected. Please login to view NFTs"}{" "}
-        {currAddress !== "0x" ? currAddress.substring(0, 15) + "..." : ""}
+        {currAddress !== "0x"
+          ? currAddress.substring(0, 7) +
+            "..." +
+            currAddress.substring(currAddress.length - 4)
+          : ""}
       </div>
     </div>
   );

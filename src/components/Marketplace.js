@@ -63,14 +63,14 @@ export default function Marketplace() {
 
   return (
     <div className="w-full h-full ">
-      <div className="bg-black w-screen">
+      <div className="bg-black w-screen ">
         <Navbar></Navbar>
-        <div className="flex h-screen flex-col place-items-center mt-20">
-          <div className="md:text-xl font-bold text-white">Top NFTs</div>
+        <div className="flex flex-col place-items-center mt-20">
+          <div className="md:text-xl font-bold text-white">Listed NFTs</div>
           <div className="flex mt-5 justify-between flex-wrap max-w-screen-xl text-center">
             {loading ? (
               // Render loading spinners here
-              <div className="spinner text-white">Loading...</div>
+              <div className="spinner  text-white">Loading...</div>
             ) : (
               // Render fetched data here
               data.map((value, index) => {
